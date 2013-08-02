@@ -284,5 +284,8 @@ class TemplateOverviewPage_Controller extends Page_Controller {
 
 	}
 
+	function TestTaskLink(){
+		return "/dev/tasks/CheckAllTemplates/";
+	}
 }
 
