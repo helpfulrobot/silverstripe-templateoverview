@@ -211,7 +211,7 @@ class CheckAllTemplates extends BuildTask {
 		$this->username = "TEMPLATEOVERVIEW_URLCHECKER___";
 		$this->password = rand(1000000000,9999999999);
 		//Make temporary admin member
-		$adminMember = Member::get()->filter(array("Email" => $this->username))->first();
+		$adminMember = DataObject::get_one("Member", "\"Email\" = '".$this->username."'");
 		if($adminMember != NULL) {
 			$adminMember->delete();
 		}
@@ -219,7 +219,7 @@ class CheckAllTemplates extends BuildTask {
 		$this->member->Email = $this->username;
 		$this->member->Password = $this->password;
 		$this->member->write();
-		$adminGroup = Group::get()->filter(array("code" => "administrators"))->first();
+		$adminGroup = DataObject::get_one("Group", "\"code\" = 'administrators'");
 		if(!$adminGroup) {
 			user_error("No admin group exists");
 		}
@@ -325,13 +325,13 @@ class CheckAllTemplates extends BuildTask {
 		$pages = array();
 		$list = null;
 		if(class_exists("TemplateOverviewPage")) {
-			$templateOverviewPage = TemplateOverviewPage::get()->First();
+			$templateOverviewPage = DataObject::get_one("TemplateOverviewPage");
 			if(!$templateOverviewPage) {
 				$templateOverviewPage = singleton("TemplateOverviewPage");
-				$list = $templateOverviewPage->ListOfAllClasses();
-				foreach($list as $page) {
-					$pages[] = $page->ClassName;
-				}
+			}
+			$list = $templateOverviewPage->ListOfAllClasses();
+			foreach($list as $page) {
+				$pages[] = $page->ClassName;
 			}
 		}
 		if(!count($pages)) {
@@ -356,17 +356,6 @@ class CheckAllTemplates extends BuildTask {
 					$obj = singleton($modelAdmin);
 					$modelAdminLink = $obj->Link();
 					$models[] = $modelAdminLink;
-					$modelsToAdd = $obj->getManagedModels();
-					if($modelsToAdd && count($modelsToAdd)) {
-						foreach($modelsToAdd as $model => $extraInfo) {
-							$modelLink = $modelAdminLink.$model."/";
-							$models[] = $modelLink;
-							$models[] = $modelLink."EditForm/field/".$model."/item/new/";
-							if($item = $model::get()->First()) {
-								$models[] = $modelLink."EditForm/field/".$model."/item/".$item->ID."/edit";
-							}
-						}
-					}
 				}
 			}
 		}
@@ -382,10 +371,10 @@ class CheckAllTemplates extends BuildTask {
 		//first() will return null or the object
 		$return = array();
 		foreach($this->classNames as $class) {
-			$page = $class::get()->exclude(array("ClassName" => $this->arrayExcept($this->classNames, $class)))->first();
+			$page = DataObject::get_one($class, "\"ClassName\" NOT IN('".implode("','", $this->arrayExcept($this->classNames, $class))."')");
 			if($page) {
 				if($publicOrAdmin) {
-					$url = "/admin/pages/edit/show/".$page->ID;
+					$url = "/admin/show/".$page->ID;
 				}
 				else {
 					$url = $page->link();
