@@ -209,7 +209,7 @@ class CheckAllTemplates extends BuildTask {
 	 */
 	private function createAndLoginUser(){
 		$this->username = "TEMPLATEOVERVIEW_URLCHECKER___";
-		$this->password = rand(1000000000,9999999999);
+		$this->password = rand(1000000000,9999999999)."AAaa_+";
 		//Make temporary admin member
 		$adminMember = DataObject::get_one("Member", "\"Email\" = '".$this->username."'");
 		if($adminMember != NULL) {
